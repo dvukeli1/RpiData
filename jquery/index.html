@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="us">
+<head>
+	<meta charset="utf-8">
+	<title>jQuery UI Example Page</title>
+	<link href="jquery-ui.css" rel="stylesheet">
+	<style>
+	body{
+		font: 62.5% "Trebuchet MS", sans-serif;
+		margin: 50px;
+	}
+	.demoHeaders {
+		margin-top: 2em;
+	}
+	#dialog-link {
+		padding: .4em 1em .4em 20px;
+		text-decoration: none;
+		position: relative;
+	}
+	#dialog-link span.ui-icon {
+		margin: 0 5px 0 0;
+		position: absolute;
+		left: .2em;
+		top: 50%;
+		margin-top: -8px;
+	}
+	#icons {
+		margin: 0;
+		padding: 0;
+	}
+	#icons li {
+		margin: 2px;
+		position: relative;
+		padding: 4px 0;
+		cursor: pointer;
+		float: left;
+		list-style: none;
+	}
+	#icons span.ui-icon {
+		float: left;
+		margin: 0 4px;
+	}
+	.fakewindowcontain .ui-widget-overlay {
+		position: absolute;
+	}
+	select {
+		width: 200px;
+	}
+	</style>
+</head>
+<body>
+<h1>Raspberry control center</h1>
+
+<!-- Tabs -->
+<h2 class="demoHeaders">Hostnames</h2>
+<div id="tabs">
+	<ul>
+		<li><a href="#tabs-1">raspiMeteo</a></li>
+		<li><a href="#tabs-2">raspiCam</a></li>
+		
+	</ul>
+	<div id="tabs-1"> <table>
+        <tbody><tr>
+            <tr>
+        
+            <td width="100%">
+            <canvas id="name" width="490" height="3">No canvas in your browser...sorry...</canvas>  
+                <canvas id="canvasClock" width="401" height="50">No canvas in your browser...sorry...</canvas>             
+            </td>
+            
+        </tr>
+        <tr>
+            <td width="100%"> 
+               
+                 <canvas id="canvasRadial1" width="201" height="201">No canvas in your browser...sorry...</canvas>   
+                  <canvas id="canvasRadial2" width="201" height="201">No canvas in your browser...sorry...</canvas>   
+                 <canvas id="canvasRadial3" width="201" height="201">No canvas in your browser...sorry...</canvas>                
+            </td>
+             
+        </tr>
+         </tbody></table>
+     </div>
+	<div id="tabs-2"> <table>
+        <tbody><tr>
+            <tr>
+        
+            <td width="100%">
+            <canvas id="name1" width="490" height="3">No canvas in your browser...sorry...</canvas>  
+                <canvas id="canvasClock1" width="401" height="50">No canvas in your browser...sorry...</canvas>             
+            </td>
+            
+        </tr>
+        <tr>
+            <td width="100%"> 
+               
+                 <canvas id="canvasRadial11" width="201" height="201">No canvas in your browser...sorry...</canvas>   
+                  <canvas id="canvasRadial21" width="201" height="201">No canvas in your browser...sorry...</canvas>   
+                 <canvas id="canvasRadial31" width="201" height="201">No canvas in your browser...sorry...</canvas>                
+            </td>
+             
+        </tr>
+         </tbody></table></div>
+	
+</div>
+<body onload="init();" style="background-color:#202020">
+
+<script src="external/jquery/jquery.js"></script>
+<script src="jquery-ui.js"></script>
+<script src="tween-min.js"></script>
+<script src="steelseries.js"></script>
+<script>
+$( "#tabs" ).tabs();
+  var radial1,
+        clock;
+      var j = 30;
+      var send_time = [];
+      var host = [];
+      var ip = [];
+      var temp = [];
+      var coreVolt = [];
+      var mem_tot = [];
+      var mem_usd = [];
+      var mem_free= [];
+     var read = 0;
+  
+  function init(){
+     $.ajax({
+        url: "http://flumen.club/wp/rpi/rest.php/info?",
+    }).done(function(data) {
+        setValue(data.info);
+          draw();  
+    });
+} 
+
+    function draw() {
+        
+   var sections = [steelseries.Section(0, 50, 'rgba(220, 0, 0, 0.3)'),
+                        steelseries.Section(50, 100, 'rgba(220, 220, 0, 0.3)'),
+                        steelseries.Section(100, 1000, 'rgba(0, 220, 0, 0.3)') ],
+
+            // Define one area
+            areas = [steelseries.Section(75, 100, 'rgba(220, 0, 0, 0.3)')];
+
+        // Initialzing gauges
+       
+
+        radial1 = new steelseries.Radial('canvasRadial1', {
+                gaugeType: steelseries.GaugeType.TYPE2,
+                 labelNumberFormat : steelseries.LabelNumberFormat.SCIENTIFIC,
+                            size: 250,
+                            lcdVisible: true,
+                             threshold : 1.5,
+                            thresholdRising : true,
+                             maxValue : 3.3,
+                             tickDecimals: 3.3,
+                            titleString: 'Core voltage',
+                            unitString: 'V',
+                            degreeScaleDecimals :2,
+                            pointSymbolsVisible: true,
+                            trendVisible : true,
+                            fractionalScaleDecimals : 2,
+                  
+                            });
+       radial2 = new steelseries.Linear('canvasRadial2', {
+                            gaugeType: steelseries.GaugeType.TYPE2,
+                            width: 100,
+                            height: 250,
+                            maxValue : 90,
+                            section: sections,
+                            useSectionColors: true,
+                            titleString: 'CPU Temp',
+                            unitString: '°',
+                            lcdVisible: true,
+                            threshold : 75
+         
+       });
+       radial3 = new steelseries.Radial('canvasRadial3', {
+           gaugeType: steelseries.GaugeType.TYPE3,
+           size: 250,
+           maxValue: 1000,
+           section: sections,
+           useSectionColors: true,
+           titleString: 'Memory free',
+           unitString: 'MB',
+           lcdDecimals :0,
+           lcdVisible: true,
+           trendVisible : true,
+           threshold : 50,
+           thresholdRising : false
+         
+           
+       });
+
+
+        clock = new steelseries.DisplaySingle('canvasClock', {
+                            width: 330,
+                            height: 50,
+                            value: "",
+                            autoScroll: false,
+                            valuesNumeric: false,
+                            digitalFont : true
+                            });
+  hostLCD= new steelseries.DisplaySingle('name', {
+                            width: 180,
+                            height: 50,
+                            value: "",
+                            autoScroll: false,
+                            valuesNumeric: false,
+                            digitalFont : true
+                            });
+
+
+   radial11 = new steelseries.Radial('canvasRadial11', {
+       gaugeType: steelseries.GaugeType.TYPE2,
+                            size: 250,
+                            labelNumberFormat : steelseries.LabelNumberFormat.SCIENTIFIC,
+                            lcdVisible: true,
+                             threshold : 1.5,
+                            thresholdRising : true,
+                             maxValue : 3.3,
+                             tickDecimals: 2,
+                            degreeScaleHalf: true,
+                             titleString: 'Core voltage',
+                            unitString: 'V',
+                            degreeScaleDecimals :2,
+                            pointSymbolsVisible: true,
+                            trendVisible : true,
+                 
+                            });
+       radial21 = new steelseries.Linear('canvasRadial21', {
+                            gaugeType: steelseries.GaugeType.TYPE2,
+                            width: 100,
+                            height: 250,
+                            threshold : 75,
+                            maxValue : 90,
+                            section: sections,
+                            useSectionColors: true,
+                            titleString: 'CPU Temp',
+                            unitString: '°',
+                            lcdVisible: true
+                           
+       });
+       radial31 = new steelseries.Radial('canvasRadial31', {
+         gaugeType: steelseries.GaugeType.TYPE3,
+           size: 250,
+           maxValue: 512,
+           niceScale : true,
+           threshold : 50,
+           thresholdRising : false,
+           section: sections,
+           useSectionColors: true,
+           titleString: 'Memory free',
+           unitString: 'MB',
+           lcdDecimals :0,
+           lcdVisible: true,
+           trendVisible : true,
+     
+       });
+
+
+        clock1 = new steelseries.DisplaySingle('canvasClock1', {
+                            width: 330,
+                            height: 50,
+                            value: "",
+                            autoScroll: false,
+                            valuesNumeric: false,
+                            digitalFont : true
+                            });
+  hostLCD1= new steelseries.DisplaySingle('name1', {
+                            width: 180,
+                            height: 50,
+                            value: "",
+                            autoScroll: false,
+                            valuesNumeric: false,
+                            digitalFont : true
+                            });
+
+  radial1.setFrameDesign(steelseries.FrameDesign.GLOSSY_METAL);
+  radial2.setFrameDesign(steelseries.FrameDesign.GLOSSY_METAL);
+  radial3.setFrameDesign(steelseries.FrameDesign.GLOSSY_METAL);
+  radial11.setFrameDesign(steelseries.FrameDesign.GLOSSY_METAL);
+  radial21.setFrameDesign(steelseries.FrameDesign.GLOSSY_METAL);
+  radial31.setFrameDesign(steelseries.FrameDesign.GLOSSY_METAL);
+   radial1.setPointerColor(steelseries.ColorDef.WHITE);
+ radial11.setPointerColor(steelseries.ColorDef.WHITE);
+ radial3.setPointerColor(steelseries.ColorDef.WHITE);
+ radial31.setPointerColor(steelseries.ColorDef.WHITE);
+ radial1.setPointerType(steelseries.PointerType.TYPE13);
+
+ radial11.setPointerType(steelseries.PointerType.TYPE13);
+
+ radial3.setPointerType(steelseries.PointerType.TYPE13);
+ radial31.setPointerType(steelseries.PointerType.TYPE13);
+
+  radial1.setBackgroundColor(steelseries.BackgroundColor.CARBON);
+  radial11.setBackgroundColor(steelseries.BackgroundColor.CARBON);
+  radial2.setBackgroundColor(steelseries.BackgroundColor.BLACK);
+  radial21.setBackgroundColor(steelseries.BackgroundColor.BLACK);
+  radial3.setBackgroundColor(steelseries.BackgroundColor.PUNCHED_SHEET);
+  radial31.setBackgroundColor(steelseries.BackgroundColor.PUNCHED_SHEET);
+  radial1.setLcdColor(steelseries.LcdColor.YELLOW);
+  radial2.setLcdColor(steelseries.LcdColor.YELLOW);
+  radial3.setLcdColor(steelseries.LcdColor.YELLOW);
+  radial11.setLcdColor(steelseries.LcdColor.YELLOW);
+  radial21.setLcdColor(steelseries.LcdColor.YELLOW);
+  radial31.setLcdColor(steelseries.LcdColor.YELLOW);
+  clock.setLcdColor(steelseries.LcdColor.GREEN);
+  hostLCD.setLcdColor(steelseries.LcdColor.WHITE);
+  clock1.setLcdColor(steelseries.LcdColor.GREEN);
+  hostLCD1.setLcdColor(steelseries.LcdColor.WHITE);
+  
+
+       setInterval(function(){ update(); }, 60000);
+       setInterval(function(){ animate(); }, 2000);
+       
+        
+       
+    }
+
+    function setRandomValue(gauge, range) {
+        gauge.setValueAnimated(Math.random() * range);
+    }
+
+   
+function update(){
+     $.ajax({
+        url: "http://flumen.club/wp/rpi/rest.php/info",
+    }).done(function(data) {
+        setValue(data.info);
+    });
+}
+
+  
+function setValue(data){
+send_time = [];
+host = [];
+ip = [];
+temp = [];
+coreVolt = [];
+mem_tot = [];
+mem_usd = [];
+mem_free= [];
+    var i = 0;
+
+    $.each(data.records, function (i, value) {
+       
+       send_time.push(value[0]);
+  host.push(value[1]);
+  ip.push(value[2]);
+  temp.push(value[3]);
+  coreVolt.push(value[4]);
+  mem_tot.push(value[5]);
+  mem_usd.push(value[6]);
+  mem_free.push(value[7]);
+        
+   
+        i++;
+
+  
+    });
+    
+    
+  
+
+}
+
+function animate(){
+radial1.setValueAnimated(coreVolt[0]);
+radial2.setValueAnimated(temp[0]);
+radial3.setValueAnimated(mem_free[0]);
+clock.setValue(send_time[0]);
+hostLCD.setValue(host[0]);
+radial11.setValueAnimated(coreVolt[1]);
+radial21.setValueAnimated(temp[1]);
+radial31.setValueAnimated(mem_free[1]);
+clock1.setValue(send_time[1]);
+hostLCD1.setValue(host[1]);
+}
+
+</script>
+</body>
+</html>
