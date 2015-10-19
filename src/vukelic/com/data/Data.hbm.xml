@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<!-- Generated Oct 14, 2015 1:46:28 PM by Hibernate Tools 4.3.1 -->
+<hibernate-mapping>
+    <class name="vukelic.com.data.Data" table="data" catalog="jan_test" optimistic-lock="version">
+        <id name="serial" type="string">
+            <column name="serial" length="50" />
+            <generator class="foreign">
+                <param name="property">device</param>
+            </generator>
+        </id>
+        <one-to-one name="device" class="vukelic.com.data.Device" constrained="true"></one-to-one>
+        <property name="sendTime" type="timestamp">
+            <column name="send_time" length="19" not-null="true" />
+        </property>
+        <property name="temp" type="double">
+            <column name="temp" precision="22" scale="0" not-null="true" />
+        </property>
+        <property name="coreVolt" type="double">
+            <column name="coreVolt" precision="22" scale="0" not-null="true" />
+        </property>
+        <property name="memTot" type="double">
+            <column name="mem_tot" precision="22" scale="0" not-null="true" />
+        </property>
+        <property name="memUsd" type="double">
+            <column name="mem_usd" precision="22" scale="0" not-null="true" />
+        </property>
+        <property name="memFree" type="double">
+            <column name="mem_free" precision="22" scale="0" not-null="true" />
+        </property>
+    </class>
+</hibernate-mapping>
